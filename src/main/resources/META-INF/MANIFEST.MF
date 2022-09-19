@@ -1,8 +1,9 @@
 Manifest-Version: 1.0
-Main-Class: com.example.hunspelleditor.HelloApplication
-Class-Path: javafx-base-11.0.2-win.jar bridj-0.7.0.jar javafx-base-11.0.
- 2.jar formsfx-core-11.3.2.jar javafx-controls-11.0.2-win.jar javafx-fxm
- l-11.0.2.jar controlsfx-11.1.0.jar hunspell-bridj-1.0.4.jar javafx-grap
- hics-11.0.2-win.jar javafx-fxml-11.0.2-win.jar log4j-1.2.17.jar javafx-
- controls-11.0.2.jar javafx-graphics-11.0.2.jar dx-1.7.jar
+Main-Class: com.example.hunspelldemo.HelloApplication
+Class-Path: javafx-fxml-11.0.2.jar hunspell.jar dx-1.7.jar javafx-contro
+ ls-11.0.2-win.jar javafx-graphics-11.0.2-win.jar javafx-controls-11.0.2
+ .jar formsfx-core-11.3.2.jar controlsfx-11.1.0.jar javafx-base-11.0.2-w
+ in.jar javafx-base-11.0.2.jar jna-5.12.1.jar bridj-0.7.0.jar hunspell-b
+ ridj-1.0.4.jar javafx-graphics-11.0.2.jar javafx-fxml-11.0.2-win.jar lo
+ g4j-1.2.17.jar
 
