@@ -44,9 +44,6 @@ public class HelloController implements Initializable {
     @FXML
     private TableView<String[]> test2List;
 
-//    @FXML
-//    private TextField testStem;
-
     @FXML
     private ChoiceBox<TestSuffixSet> testSuffixes;
 
@@ -64,16 +61,8 @@ public class HelloController implements Initializable {
 
     @FXML
     private RadioButton addToCustom;
-//    @FXML
-//    private TableColumn<String, String> columnOne;
-//
-//    @FXML
-//    private TableColumn<String, String> columnTwo;
-
-//    private Map<String, String[]> suffix = new HashMap<>();
     private List<TestSuffixSet> suffix = new ArrayList<>();
     private Map<String, DictionaryItem> words  = new HashMap<>();
-//    private Set<DictionaryItem> words = new HashSet<>();
 
     private Map<String, String> captionsOfHunspellPOS = new HashMap<>(); // caption -> hunpos (pl "ige" -> "vrb"
 
@@ -90,24 +79,9 @@ public class HelloController implements Initializable {
 
         bundle = resources;
 
-        // test:
-//        inputText.setText("twitter");
         boolean iniOK = loadIni("test.cfg");
 
         loadDictionary(dictPath + langCode + ".dic", true);
-
-//        suffix.put("főnév e", new String[]{"e", "nek", "ben", "ek"});
-//        suffix.put("főnév mély", new String[]{"ja", "nak", "ban", "ok"});
-//        suffix.put("főnév magas", new String[]{"je", "nek", "ben", "ok"});
-//        suffix.put("ige", new String[]{"om", "ol", "nak"});
-
-        // Mély hangrendűek: a, á, o, ó, u, ú
-//        suffix.add(new TestSuffixSet("főnév", "mély", new String[]{"", "ja", "nak", "ban", "k", "hoz"}));
-//        suffix.add(new TestSuffixSet("főnév", "magas", new String[]{"je", "nek", "ben", "ek"}));
-//        suffix.add(new TestSuffixSet("főnév", "e", new String[]{"e", "nek", "ben", "ek"}));
-//        suffix.add(new TestSuffixSet("ige", "bla", new String[]{"om", "ol", "nak"}));
-//        suffix.add(new TestSuffixSet("melléknév", "magas", new String[]{"ebb", "ebbtől", "ebbnek"}));
-
 
         List<String> posList = suffix.stream().map(TestSuffixSet::getPos).distinct().collect(Collectors.toList());
         posList.add(getCaption("any"));
@@ -115,7 +89,7 @@ public class HelloController implements Initializable {
         ObservableList<String> oPosList = FXCollections.observableArrayList();
         partOfSpeech.setItems(oPosList);
         oPosList.addAll(posList);
-        partOfSpeech.setValue(posList.get(0));//suffix.keySet().stream().findFirst().get());//"főnév");
+        partOfSpeech.setValue(posList.get(0));
 
         ObservableList<TestSuffixSet> oSuffisList = FXCollections.observableArrayList();
         testSuffixes.setItems(oSuffisList);
@@ -126,7 +100,6 @@ public class HelloController implements Initializable {
 
         ObservableList<DictionaryItem> outList = FXCollections.observableArrayList();
         similarWordList.setItems(outList);
-//        outList.addAll("a", "b", "c");
 
         TableColumn<String[],String> columnOne = new TableColumn<>(getCaption("wordform"));
         TableColumn<String[],String> columnTwo = new TableColumn<>(getCaption("stem"));
@@ -183,9 +156,6 @@ public class HelloController implements Initializable {
 
             @Override
             public void changed(ObservableValue<? extends TestSuffixSet> observable, TestSuffixSet oldValue, TestSuffixSet newValue) {
-                // Your action here
-//                System.out.println("Selected item: " + newValue.getName());
-                //checkNewWord(inputText.getText(), newValue);
                 testWordForms(false);
             }
         });
@@ -253,26 +223,11 @@ public class HelloController implements Initializable {
 
     private String getCaption(String id){
         return bundle.getString(id);
-//        if (captions == null)
-//            return id;
-//        return captions.getProperty(id, id);
     }
 
     private void findSimilar(String word, String pos, int last){
 
-//        Map<String, String> map = new HashMap<>();
-//        map.put("alma", "");
-//        map.put("körte", "");
-//        map.put("Béla", "");
-//        map.putAll(new String[]{"alma", "körte", "Béla"});
         String hunspellPOS = captionsOfHunspellPOS.get(pos);
-//        if ("főnév".equals(pos)){
-//            hunspellPOS = "noun";
-//        }else if ("melléknév".equals(pos)){
-//            hunspellPOS = "adj";
-//        }else if ("ige".equals(pos)){
-//            hunspellPOS = "vrb";
-//        }
 
         int from = word.length() - (last >= word.length() ? word.length() : last);
         if (from < 0) from = 0;
@@ -287,14 +242,9 @@ public class HelloController implements Initializable {
         similarLabel.setText(getCaption("similarTo") + "  (" + (from > 0 ? "..." : "") + lastCh + ", " + subset.size() + ")");
 
         similarWordList.getItems().clear();
-//        for (Map.Entry<String, DictionaryItem> entry : subset.entrySet() ) {
         List<DictionaryItem> list = new ArrayList<>(subset.values());
         list.sort(Comparator.comparing(DictionaryItem::getCounter).reversed());
-//        list.stream().sorted(Comparator.comparing(DictionaryItem::getCounter).reversed()).collect(Collectors.toList());
         similarWordList.getItems().addAll(list);
-//        }
-
-
     }
 
     @FXML
@@ -336,8 +286,6 @@ public class HelloController implements Initializable {
             String line;
             while ((line = br.readLine()) != null) {
                 // process the line.
-//                String[] a = line.split("\\b");
-//                words.put(a[0], a.length > 1 ? a[1] : "");
                 if (first){
                     first = false;
                     continue; //skip the 1st line
@@ -348,7 +296,7 @@ public class HelloController implements Initializable {
                 if (withPOS) {
                     String pos = posSet.get(d.getCode());
                     if (pos == null) {
-                        // it hasnt analysed yet
+                        // it hasn't analysed yet
                         d.setPos(h.getPOS(d.getWord()));
                         posSet.put(d.getCode(), d.getPos());
                     } else
@@ -367,14 +315,6 @@ public class HelloController implements Initializable {
         } catch (IOException e) {
             logger.error("io error: " + e.getMessage());
         }
-
-
-        // teszt
-//        for(Map.Entry<Integer, String> e : posSet.entrySet()){
-//
-//        }
-//        Set<String> allPos = posSet.entrySet().stream().map(Map.Entry::getValue).distinct().collect(Collectors.toSet());
-//        logger.info(allPos);
     }
 
     // ha van backup: visszaallitja, ha nincs letrehozza
@@ -407,7 +347,6 @@ public class HelloController implements Initializable {
     private void checkNewWord(String newWord, DictionaryItem similar){
 
         String line = similar.getOriginal().replace(similar.getWord(), newWord);
-//        System.out.println(line);
 
         dictBackup();
 
@@ -435,12 +374,7 @@ public class HelloController implements Initializable {
             logger.info("sorry to say the generating set is empty");
             return new String[]{};
         }
-        String[] list = name.getSuffixes();
-//                suffix.stream().filter(a -> a.getName().equals(name) && a.getPos().equals(pos))
-//                .findFirst()
-//                .map(TestSuffixSet::getSuffixes).orElse(new String[]{});
-//
-        return list;
+        return name.getSuffixes();
     }
 
     private void testWordForms(boolean reload){
@@ -448,21 +382,13 @@ public class HelloController implements Initializable {
 //        HunspellTester h = new HunspellTester(dictPath, reload);
         HunspellBridJTester h = new HunspellBridJTester(dictPath + langCode, reload);
 
-//        if (testStem.getText().isEmpty())
-//            testStem.setText(inputText.getText());
         String[] s = getCurrentSuffixSetValues();
-
 
         String word = inputText.getText(); // testStem.getText();
         test2List.getItems().clear();
         for(String suffix : s){
 
-            // toldalekot hozzacsapja:
-//            String w = word + suffix;
-//            List<String> r = h.getStemList(w);
-//            test2List.getItems().add(new String[]{w, String.join(",", r) + (!r.isEmpty() ? " \u2705" : " \u274C")});
-
-            // generalunk :)
+            // we are generating :)
             List<String> forms = h.generate(word, suffix);
             for(String w : forms){
                 List<String> r = h.getStemList(w);
@@ -472,9 +398,6 @@ public class HelloController implements Initializable {
                 test2List.getItems().add(new String[]{word +" (" + suffix + ")", "\u274C (" + getCaption("couldntGenerate")+ ")"});
             }
         }
-
-
-
     }
     public void onSearchButtonClick(ActionEvent actionEvent) {
 
