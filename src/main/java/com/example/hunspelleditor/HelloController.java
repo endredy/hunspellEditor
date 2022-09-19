@@ -398,6 +398,7 @@ public class HelloController implements Initializable {
 
         String word = inputText.getText(); // testStem.getText();
         test2List.getItems().clear();
+
         for(String example : s){
 
             // we are generating :)
