@@ -14,7 +14,7 @@ public class HelloApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         BasicConfigurator.configure(); // log4j init
-        ResourceBundle bundle = ResourceBundle.getBundle("bundles.LangBundle", new Locale("hu", "HU"));
+        ResourceBundle bundle = ResourceBundle.getBundle("bundles.LangBundle", new Locale("en", "EN"));
         FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("hello-view.fxml"), bundle);
         Scene scene = new Scene(fxmlLoader.load(), 950, 350);
         stage.setTitle("Hello!");

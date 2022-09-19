@@ -6,5 +6,7 @@ It helps to find similar word (with the same part of speech and similar ending),
 
 
 
+![alt text](screenshot.en.png)
+
 screenshot in Hungarian:
 ![alt text](screenshot.png)
