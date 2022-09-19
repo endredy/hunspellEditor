@@ -1,4 +1,4 @@
-package com.example.hunspelldemo;
+package com.example.hunspelleditor;
 
 import java.io.IOException;
 

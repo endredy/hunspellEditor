@@ -1,4 +1,4 @@
-package com.example.hunspelldemo;
+package com.example.hunspelleditor;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
@@ -147,6 +147,8 @@ public class HelloController implements Initializable {
             @Override
             public void changed(ObservableValue<? extends DictionaryItem> observable, DictionaryItem oldValue, DictionaryItem newValue) {
                 // Your action here
+                if (newValue == null)
+                    return;
                 System.out.println("Selected item: " + newValue.getWord());
                 checkNewWord(inputText.getText(), newValue);
             }
@@ -260,6 +262,16 @@ public class HelloController implements Initializable {
 
         if (addToDict.isSelected()){
             return; // new word is already in the dictionary
+        }
+
+        // check adding word
+        if (hunspellFreeTextTester == null) {
+            hunspellFreeTextTester = new HunspellBridJTester(dictPath + langCode, false);
+        }
+        if (!hunspellFreeTextTester.addCustomWord(inputText.getText(), similar.getWord())){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION, getCaption("cannotAddWord"), ButtonType.CLOSE);
+            alert.showAndWait();
+            return;
         }
 
         String line = inputText.getText() + "/" + similar.getWord();
@@ -386,16 +398,16 @@ public class HelloController implements Initializable {
 
         String word = inputText.getText(); // testStem.getText();
         test2List.getItems().clear();
-        for(String suffix : s){
+        for(String example : s){
 
             // we are generating :)
-            List<String> forms = h.generate(word, suffix);
+            List<String> forms = h.generate(word, example);
             for(String w : forms){
                 List<String> r = h.getStemList(w);
                 test2List.getItems().add(new String[]{w, String.join(",", r) + (!r.isEmpty() ? " \u2705" : " \u274C")});
             }
             if (forms.isEmpty()){
-                test2List.getItems().add(new String[]{word +" (" + suffix + ")", "\u274C (" + getCaption("couldntGenerate")+ ")"});
+                test2List.getItems().add(new String[]{word +" (" + example + ")", "\u274C (" + getCaption("couldntGenerate")+ ")"});
             }
         }
     }

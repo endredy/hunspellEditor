@@ -1,4 +1,4 @@
-package com.example.hunspelldemo;
+package com.example.hunspelleditor;
 
 import dk.dren.hunspell.Hunspell;
 import org.apache.log4j.Logger;

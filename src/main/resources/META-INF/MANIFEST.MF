@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Main-Class: com.example.hunspelldemo.HelloApplication
+Main-Class: com.example.hunspelleditor.HelloApplication
 Class-Path: javafx-fxml-11.0.2.jar hunspell.jar dx-1.7.jar javafx-contro
  ls-11.0.2-win.jar javafx-graphics-11.0.2-win.jar javafx-controls-11.0.2
  .jar formsfx-core-11.3.2.jar controlsfx-11.1.0.jar javafx-base-11.0.2-w

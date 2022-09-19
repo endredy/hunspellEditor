@@ -1,7 +1,6 @@
-package com.example.hunspelldemo;
+package com.example.hunspelleditor;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +14,7 @@ public class ConfigReader {
     public static String getCheckedProperty(Properties prop, String name, String def) throws IOException {
         String value = prop.getProperty(name, def);
         if (value == null)
-            throw new MissingCfgValue("a cfg-bol hianyzik: " + name);
+            throw new MissingCfgValue("missing from cfg: " + name);
         return value.trim();
     }
     public static String getProperty(Properties prop, String name, String def) throws IOException {

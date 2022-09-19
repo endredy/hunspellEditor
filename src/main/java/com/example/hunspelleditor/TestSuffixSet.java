@@ -1,4 +1,4 @@
-package com.example.hunspelldemo;
+package com.example.hunspelleditor;
 
 public class TestSuffixSet {
     private String pos;

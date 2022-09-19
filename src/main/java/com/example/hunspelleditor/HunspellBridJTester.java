@@ -1,4 +1,4 @@
-package com.example.hunspelldemo;
+package com.example.hunspelleditor;
 
 
 import com.atlascopco.hunspell.Hunspell;
@@ -6,6 +6,8 @@ import org.apache.log4j.Logger;
 
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 
 // https://github.com/thomas-joiner/HunspellBridJ
@@ -15,7 +17,7 @@ public class HunspellBridJTester {
 
     private static org.apache.log4j.Logger logger = Logger.getLogger(HunspellBridJTester.class);
 
-    public static final String USERDICT = "_sajat.dic";
+    public static final String USERDICT = "_custom.dic";
 
     public HunspellBridJTester(String dictPath, boolean reload) {
 
@@ -34,7 +36,7 @@ public class HunspellBridJTester {
 //            stemmer = Hunspell.getInstance().getDictionary(dictPath);
             //log("OK");
         } catch (UnsatisfiedLinkError | UnsupportedOperationException e) {
-            logger.error("hunspell betoltesi hiba (" + e.getMessage() + ")");
+            logger.error("hunspell loading error (" + e.getMessage() + ")");
         }
     }
 
@@ -72,25 +74,41 @@ public class HunspellBridJTester {
         return null;
     }
 
+
+    public boolean addCustomWord(String word, String example){
+
+        try{
+            stemmer.addWithAffix(word, example);
+        }catch (Exception e){
+            logger.info("could not add new word: " + word + " (error: " + e.getMessage() + ")");
+            return false;
+        }
+        return true;
+    }
+
     public boolean loadUserDictionary(String path){
 
         File file = new File(path);
+        if (!Files.exists(Paths.get(path))) {
+            return false;
+        }
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split("[/\\t]");
-                try {
+//                try {
                     if (parts.length == 2)
-                        stemmer.addWithAffix(parts[0], parts[1]);
-                }catch (Exception e){
-                    logger.info("ezt nem tudta felvenni: " + parts[0] + " (error: " + e.getMessage() + ")");
-                }
+                        addCustomWord(parts[0], parts[1]);
+//                        stemmer.addWithAffix(parts[0], parts[1]);
+//                }catch (Exception e){
+//                    logger.info("could not add new word: " + parts[0] + " (error: " + e.getMessage() + ")");
+//                }
             }
             return true;
         } catch (FileNotFoundException e) {
-            logger.error("nem talaltuk a fajlt: " + path + " (" + e.getMessage() + ")");
+            logger.error("fle not found: " + path + " (" + e.getMessage() + ")");
         } catch (IOException e) {
-            logger.error("io hiba: " + path + " (" + e.getMessage() + ")");
+            logger.error("io error: " + path + " (" + e.getMessage() + ")");
         }
         return false;
     }

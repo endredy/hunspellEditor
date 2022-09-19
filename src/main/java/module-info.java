@@ -8,6 +8,6 @@ module com.example.hunspelldemo {
     requires hunspell.bridj;
     requires log4j;
 
-    opens com.example.hunspelldemo to javafx.fxml;
-    exports com.example.hunspelldemo;
+    opens com.example.hunspelleditor to javafx.fxml;
+    exports com.example.hunspelleditor;
 }

@@ -1,4 +1,4 @@
-package com.example.hunspelldemo;
+package com.example.hunspelleditor;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
