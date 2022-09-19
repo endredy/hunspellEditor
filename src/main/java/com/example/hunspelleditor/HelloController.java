@@ -254,7 +254,6 @@ public class HelloController implements Initializable {
 
         DictionaryItem similar = similarWordList.getSelectionModel().getSelectedItem();
         if (similar == null){
-//            logger.info(getCaption("noSimilarWord"));
             Alert alert = new Alert(Alert.AlertType.INFORMATION, getCaption("noSimilarWord"), ButtonType.CLOSE);
             alert.showAndWait();
             return;
@@ -269,6 +268,7 @@ public class HelloController implements Initializable {
             hunspellFreeTextTester = new HunspellBridJTester(dictPath + langCode, false);
         }
         if (!hunspellFreeTextTester.addCustomWord(inputText.getText(), similar.getWord())){
+            // could not add word (by Hunspell add_with_affix())
             Alert alert = new Alert(Alert.AlertType.INFORMATION, getCaption("cannotAddWord"), ButtonType.CLOSE);
             alert.showAndWait();
             return;
