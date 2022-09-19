@@ -4,7 +4,6 @@ module com.example.hunspelldemo {
 
     requires org.controlsfx.controls;
     requires com.dlsc.formsfx;
-    requires hunspell;
     requires hunspell.bridj;
     requires log4j;
 

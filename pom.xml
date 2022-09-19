@@ -63,19 +63,19 @@
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/net.java.dev.jna/jna -->
-        <dependency>
-            <groupId>net.java.dev.jna</groupId>
-            <artifactId>jna</artifactId>
-            <version>5.12.1</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>net.java.dev.jna</groupId>-->
+<!--            <artifactId>jna</artifactId>-->
+<!--            <version>5.12.1</version>-->
+<!--        </dependency>-->
 
-        <dependency>
-            <groupId>dk.dren</groupId>
-            <artifactId>Hunspell</artifactId>
-            <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/src/main/resources/hunspell.jar</systemPath>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>dk.dren</groupId>-->
+<!--            <artifactId>Hunspell</artifactId>-->
+<!--            <version>1.0</version>-->
+<!--            <scope>system</scope>-->
+<!--            <systemPath>${project.basedir}/src/main/resources/hunspell.jar</systemPath>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
