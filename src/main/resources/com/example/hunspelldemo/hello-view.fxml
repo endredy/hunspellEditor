@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<?import javafx.scene.Group?>
+<VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.hunspelldemo.HelloController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+    <HBox spacing="5">
+        <VBox>
+            <Label text="%newWord" />
+            <TextField fx:id="inputText" promptText="input" />
+            <Button onAction="#onStemButtonClick" text="%stemButton" />
+        </VBox>
+        <VBox>
+            <Label text="%partOfSpeech" />
+            <ChoiceBox fx:id="partOfSpeech" prefWidth="150.0" />
+        </VBox>
+    </HBox>
+    <HBox prefHeight="200.0" prefWidth="500.0" spacing="5" maxWidth="Infinity">
+
+        <VBox spacing="1">
+            <Label text="%similarTo" fx:id="similarLabel" />
+            <ListView fx:id="similarWordList" prefHeight="200.0" prefWidth="220.0" />
+            <HBox>
+                <Button onAction="#onSearchButtonClick" text="%search"/>
+                <Spinner min="1" max="6" fx:id="similarCharLimitSpinner" prefWidth="50"/>
+            </HBox>
+        </VBox>
+        <VBox spacing="1">
+            <Label text="%check" />
+            <HBox alignment="BASELINE_LEFT">
+<!--                <Label text="tő:" />-->
+<!--                <TextField fx:id="testStem"/>-->
+                <ChoiceBox fx:id="testSuffixes" prefWidth="150.0" />
+            </HBox>
+            <TableView fx:id="test2List" maxWidth="Infinity" prefHeight="200.0">
+                <!--        <columns>-->
+                <!--          <TableColumn prefWidth="75.0" text="C1" />-->
+                <!--          <TableColumn prefWidth="75.0" text="C2" />-->
+                <!--        </columns>-->
+            </TableView>
+        </VBox>
+        <VBox spacing="1">
+            <Label text="%manualCheck" />
+            <HBox alignment="BASELINE_LEFT" spacing="1">
+                <TextField fx:id="freeText" onKeyReleased="#onFreeTextKeyUp" prefWidth="200" promptText="%freeTextTest" />
+            </HBox>
+            <VBox>
+                <Label prefWidth="70" style="-fx-font-style: italic" text="%stem" />
+                <Text fx:id="freeTextResult" style="-fx-font-family: 'Courier New';" />
+                <Label prefWidth="70" style="-fx-font-style: italic" text="%analysation" />
+                <Text fx:id="freeTextAnalysation" style="-fx-font-family: 'Courier New';" wrappingWidth="200" />
+            </VBox>
+        </VBox>
+    </HBox>
+
+
+    <Group>
+<!--    <TitledPane collapsible="false" text="%save">-->
+    <HBox alignment="CENTER" spacing="5">
+        <Button onAction="#onAddWordButtonClick" text="%addNewWordButton" />
+        <VBox spacing="5">
+
+            <RadioButton text="%addWordToDictionary" fx:id="addToDict">
+                <HBox.margin>
+                    <Insets right="3.0"/>
+                </HBox.margin>
+                <toggleGroup>
+                    <ToggleGroup fx:id="group"/>
+                </toggleGroup>
+            </RadioButton>
+            <RadioButton text="%addWordToCustomDictionary" fx:id="addToCustom" selected="true">
+                <HBox.margin>
+                    <Insets right="30.0"/>
+                    <Insets bottom="10.0"/>
+                </HBox.margin>
+                <toggleGroup>
+                    <fx:reference source="group"/>
+                </toggleGroup>
+            </RadioButton>
+        </VBox>
+    </HBox>
+<!--    </TitledPane>-->
+    </Group>
+</VBox>
