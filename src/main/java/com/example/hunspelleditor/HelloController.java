@@ -6,10 +6,12 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.text.Text;
 import org.apache.log4j.Logger;
@@ -169,6 +171,15 @@ public class HelloController implements Initializable {
                 findSimilar(inputText.getText(), partOfSpeech.getValue(), Integer.valueOf(newValue));
             }
         });
+
+        inputText.setOnKeyPressed(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent ke) {
+                if (ke.getCode().equals(KeyCode.ENTER)) {
+                    testWordForms(false);
+                }
+            }
+        });
     }
 
     private boolean loadIni(String configFile) {
@@ -245,7 +256,8 @@ public class HelloController implements Initializable {
 
         similarWordList.getItems().clear();
         List<DictionaryItem> list = new ArrayList<>(subset.values());
-        list.sort(Comparator.comparing(DictionaryItem::getCounter).reversed());
+//        list.sort(Comparator.comparing(DictionaryItem::getCounter).reversed()); // ranking by frequency
+        list.sort(Comparator.comparing(DictionaryItem::getWord)); // ranking by word
         similarWordList.getItems().addAll(list);
     }
 

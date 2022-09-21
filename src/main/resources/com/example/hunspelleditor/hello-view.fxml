@@ -66,7 +66,7 @@
         <Button onAction="#onAddWordButtonClick" text="%addNewWordButton" />
         <VBox spacing="5">
 
-            <RadioButton text="%addWordToDictionary" fx:id="addToDict">
+            <RadioButton text="%addWordToDictionary" fx:id="addToDict" selected="true">
                 <HBox.margin>
                     <Insets right="3.0"/>
                 </HBox.margin>
@@ -74,7 +74,7 @@
                     <ToggleGroup fx:id="group"/>
                 </toggleGroup>
             </RadioButton>
-            <RadioButton text="%addWordToCustomDictionary" fx:id="addToCustom" selected="true">
+            <RadioButton text="%addWordToCustomDictionary" fx:id="addToCustom">
                 <HBox.margin>
                     <Insets right="30.0"/>
                     <Insets bottom="10.0"/>
