@@ -16,7 +16,7 @@ public class HelloApplication extends Application {
         BasicConfigurator.configure(); // log4j init
         ResourceBundle bundle = ResourceBundle.getBundle("bundles.LangBundle", new Locale("en", "EN"));
         FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("hello-view.fxml"), bundle);
-        Scene scene = new Scene(fxmlLoader.load(), 950, 350);
+        Scene scene = new Scene(fxmlLoader.load(), 950, 400);
         stage.setTitle("Hello!");
         stage.setScene(scene);
         stage.show();

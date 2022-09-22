@@ -31,6 +31,13 @@ public class HelloController implements Initializable {
 
     private static org.apache.log4j.Logger logger = Logger.getLogger(HelloController.class);
     public Label similarLabel;
+    public Label dictNameLabel;
+    public Label dictWCounterLabel;
+    public Label customDictNameLabel;
+    public Label customDictWCounterLabel;
+
+    private int dictWordCounter = 0;
+    private int customDictWordCounter = 0;
     @FXML
     private TextField inputText;
 
@@ -83,7 +90,10 @@ public class HelloController implements Initializable {
 
         boolean iniOK = loadIni("test.cfg");
 
-        loadDictionary(dictPath + langCode + ".dic", true);
+        dictWordCounter = loadDictionary(dictPath + langCode + ".dic", true);
+        setDictionaryCounter(false, dictWordCounter);
+        dictNameLabel.setText( langCode + ".dic: ");
+        customDictNameLabel.setText( langCode + HunspellBridJTester.USERDICT + ": ");
 
         List<String> posList = suffix.stream().map(TestSuffixSet::getPos).distinct().collect(Collectors.toList());
         posList.add(getCaption("any"));
@@ -272,6 +282,8 @@ public class HelloController implements Initializable {
         }
 
         if (addToDict.isSelected()){
+            dictWordCounter++;
+            setDictionaryCounter(false, dictWordCounter);
             return; // new word is already in the dictionary
         }
 
@@ -293,17 +305,30 @@ public class HelloController implements Initializable {
         dictBackup();
 
         // add to custom dictionary
-        addLineToFile(line, dictPath + langCode + HunspellBridJTester.USERDICT);
+        if (addLineToFile(line, dictPath + langCode + HunspellBridJTester.USERDICT)){
+            setDictionaryCounter(true, hunspellFreeTextTester.getCustomWordCounter() + 1);
+        }
     }
 
-    private void loadDictionary(String path, boolean withPOS){
+    private void setDictionaryCounter(boolean custom, int value){
+        if (custom){
+            customDictWCounterLabel.setText( String.valueOf(value));
+        }else{
+            dictWCounterLabel.setText( String.valueOf(value));
+        }
+    }
+
+    private int loadDictionary(String path, boolean withPOS){
 
         words.clear();
 
         HunspellBridJTester h = new HunspellBridJTester(dictPath + langCode, false);
 
+        setDictionaryCounter(true, h.getCustomWordCounter());
+
         Map<Integer, String> posSet = new HashMap<>();
         boolean first = true;
+        int counter = 0;
         File file = new File(path);
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
@@ -314,6 +339,7 @@ public class HelloController implements Initializable {
                     first = false;
                     continue; //skip the 1st line
                 }
+                counter++;
                 DictionaryItem d = new DictionaryItem(line);
 
                 // get pos (each type only once :))
@@ -339,6 +365,7 @@ public class HelloController implements Initializable {
         } catch (IOException e) {
             logger.error("io error: " + e.getMessage());
         }
+        return counter;
     }
 
     // ha van backup: visszaallitja, ha nincs letrehozza
@@ -359,14 +386,16 @@ public class HelloController implements Initializable {
         }
     }
 
-    private void addLineToFile(String line, String filePath){
+    private boolean addLineToFile(String line, String filePath){
         try {
             Writer output = new BufferedWriter(new FileWriter(filePath, true));
             output.append(line).append("\n");
             output.close();
+            return true;
         } catch (IOException e) {
             logger.error("we couldn't add a new word: " + e.getMessage());
         }
+        return false;
     }
     private void checkNewWord(String newWord, DictionaryItem similar){
 
@@ -448,5 +477,48 @@ public class HelloController implements Initializable {
 
         r = hunspellFreeTextTester.getAnalysationList(freeText.getText());
         freeTextAnalysation.setText(r.isEmpty() ? "" : String.join("\n\n", r));
+    }
+
+    public void onConvertDictionaryButtonClick(ActionEvent actionEvent) {
+
+        dictBackup(); // necessary?
+
+        String customDictPath = dictPath + langCode + HunspellBridJTester.USERDICT;
+        File file = new File(customDictPath);
+        if (!Files.exists(Paths.get(customDictPath))) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION, getCaption("emptyCustomDictionary"), ButtonType.CLOSE);
+            alert.showAndWait();
+            return;
+        }
+        int counter = 0;
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split("[/\\t]");
+                if (parts.length == 2) {
+
+                    String newWord = parts[0];
+                    String existingWord = parts[1];
+
+                    DictionaryItem similar = words.values()
+                            .stream()
+                            .filter(s -> s.getWord().equals(existingWord)).findFirst().orElse(null);
+
+                    if (similar != null) {
+                        String dictLine = similar.getOriginal().replace(similar.getWord(), newWord);
+                        if (addLineToFile(dictLine, dictPath + langCode + ".dic")){
+                            counter++;
+                        }
+                    }
+                }
+            }
+        } catch (FileNotFoundException e) {
+            logger.error("fle not found: " + customDictPath + " (" + e.getMessage() + ")");
+        } catch (IOException e) {
+            logger.error("io error: " + customDictPath + " (" + e.getMessage() + ")");
+        }
+
+        dictWordCounter += counter;
+        setDictionaryCounter(false, dictWordCounter);
     }
 }

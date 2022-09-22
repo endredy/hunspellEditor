@@ -19,6 +19,8 @@ public class HunspellBridJTester {
 
     public static final String USERDICT = "_custom.dic";
 
+    private int customWordCounter = 0;
+
     public HunspellBridJTester(String dictPath, boolean reload) {
 
         try {
@@ -30,7 +32,7 @@ public class HunspellBridJTester {
             stemmer = new Hunspell(dictPath + ".dic", dictPath + ".aff");
 //            stemmer.addDic(dictPath + "_sajat.dic"); // ez nem sajatszotar!
 
-            loadUserDictionary(dictPath + USERDICT);
+            customWordCounter = loadUserDictionary(dictPath + USERDICT);
 
 //            stemmer.addWithAffix("nautica", "alma");
 //            stemmer = Hunspell.getInstance().getDictionary(dictPath);
@@ -86,30 +88,37 @@ public class HunspellBridJTester {
         return true;
     }
 
-    public boolean loadUserDictionary(String path){
+    public int loadUserDictionary(String path){
 
+        int counter = 0;
         File file = new File(path);
         if (!Files.exists(Paths.get(path))) {
-            return false;
+            return counter;
         }
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split("[/\\t]");
 //                try {
-                    if (parts.length == 2)
-                        addCustomWord(parts[0], parts[1]);
+                    if (parts.length == 2) {
+                        if (addCustomWord(parts[0], parts[1]))
+                            counter++;
+                    }
 //                        stemmer.addWithAffix(parts[0], parts[1]);
 //                }catch (Exception e){
 //                    logger.info("could not add new word: " + parts[0] + " (error: " + e.getMessage() + ")");
 //                }
             }
-            return true;
+            return counter;
         } catch (FileNotFoundException e) {
             logger.error("fle not found: " + path + " (" + e.getMessage() + ")");
         } catch (IOException e) {
             logger.error("io error: " + path + " (" + e.getMessage() + ")");
         }
-        return false;
+        return counter;
+    }
+
+    public int getCustomWordCounter() {
+        return customWordCounter;
     }
 }
