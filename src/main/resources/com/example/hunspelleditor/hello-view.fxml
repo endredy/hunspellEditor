@@ -6,9 +6,14 @@
 <?import javafx.scene.text.*?>
 
 <?import javafx.scene.Group?>
-<VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.hunspelleditor.HelloController">
+<VBox alignment="CENTER" spacing="20.0"
+      xmlns="http://javafx.com/javafx/11.0.14-internal"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.hunspelleditor.HelloController"
+      maxHeight="Infinity"
+      >
     <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+        <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
     </padding>
     <HBox spacing="5">
         <VBox>
@@ -17,11 +22,17 @@
             <Button onAction="#onStemButtonClick" text="%stemButton" />
         </VBox>
         <VBox>
+            <Label text="%pronunciation" />
+            <TextField fx:id="pronunciationText">
+                <tooltip><Tooltip text="%pronunciationTextTooltip" /></tooltip>
+            </TextField>
+        </VBox>
+        <VBox>
             <Label text="%partOfSpeech" />
             <ChoiceBox fx:id="partOfSpeech" prefWidth="150.0" />
         </VBox>
     </HBox>
-    <HBox prefHeight="200.0" prefWidth="500.0" spacing="5" maxWidth="Infinity">
+    <HBox prefWidth="500.0" spacing="5" maxWidth="Infinity" maxHeight="Infinity">
 
         <VBox spacing="1">
             <Label text="%similarTo" fx:id="similarLabel" />
@@ -29,16 +40,19 @@
             <HBox>
                 <Button onAction="#onSearchButtonClick" text="%search"/>
                 <Spinner min="1" max="6" fx:id="similarCharLimitSpinner" prefWidth="50"/>
+                <VBox style="-fx-padding: 5 15 5 5;">
+                    <CheckBox fx:id="similarProperNounCheckbox" text="%properNoun" />
+                </VBox>
             </HBox>
         </VBox>
-        <VBox spacing="1">
+        <VBox spacing="1" maxHeight="Infinity">
             <Label text="%check" />
             <HBox alignment="BASELINE_LEFT">
                 <!--                <Label text="tő:" />-->
                 <!--                <TextField fx:id="testStem"/>-->
                 <ChoiceBox fx:id="testSuffixes" prefWidth="150.0" />
             </HBox>
-            <TableView fx:id="test2List" maxWidth="Infinity" prefHeight="200.0">
+            <TableView fx:id="test2List" maxWidth="Infinity" maxHeight="Infinity">
                 <!--        <columns>-->
                 <!--          <TableColumn prefWidth="75.0" text="C1" />-->
                 <!--          <TableColumn prefWidth="75.0" text="C2" />-->

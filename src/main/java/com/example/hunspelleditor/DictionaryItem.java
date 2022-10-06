@@ -67,6 +67,7 @@ public class DictionaryItem {
 
     @Override
     public String toString() {
-        return word + "/" + code + " ("+counter+")";
+        return original;
+//        return word + "/" + code + " ("+counter+")";
     }
 }

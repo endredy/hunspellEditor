@@ -35,6 +35,8 @@ public class HelloController implements Initializable {
     public Label dictWCounterLabel;
     public Label customDictNameLabel;
     public Label customDictWCounterLabel;
+    public CheckBox similarProperNounCheckbox;
+    public TextField pronunciationText;
 
     private int dictWordCounter = 0;
     private int customDictWordCounter = 0;
@@ -178,8 +180,11 @@ public class HelloController implements Initializable {
         similarCharLimitSpinner.setTooltip(new Tooltip(getCaption("suffixSearchLimit")));
         similarCharLimitSpinner.getEditor().textProperty().addListener((obs, oldValue, newValue) -> {
             if (!"".equals(newValue)) {
-                findSimilar(inputText.getText(), partOfSpeech.getValue(), Integer.valueOf(newValue));
+                findSimilarEx(Integer.valueOf(newValue));
             }
+        });
+        similarProperNounCheckbox.selectedProperty().addListener((obs, wasSelected, isNowSelected) -> {
+            findSimilarEx(-1);
         });
 
         inputText.setOnKeyPressed(new EventHandler<KeyEvent>() {
@@ -248,7 +253,7 @@ public class HelloController implements Initializable {
         return bundle.getString(id);
     }
 
-    private void findSimilar(String word, String pos, int last){
+    private void findSimilar(String word, String pos, int last, boolean properNoun){
 
         String hunspellPOS = captionsOfHunspellPOS.get(pos);
 
@@ -259,7 +264,9 @@ public class HelloController implements Initializable {
         String finalHunspellPOS = hunspellPOS;
         Map<String, DictionaryItem> subset = words.entrySet()//.keySet()
                 .stream()
-                .filter(s -> s.getValue().getWord().endsWith(lastCh) && (finalHunspellPOS == null || (s.getValue().getPos() != null && s.getValue().getPos().startsWith(finalHunspellPOS))))
+                .filter(s -> s.getValue().getWord().endsWith(lastCh) &&
+                             (finalHunspellPOS == null || (s.getValue().getPos() != null && s.getValue().getPos().startsWith(finalHunspellPOS))) &&
+                             (properNoun || !s.getValue().getWord().isEmpty() && Character.isLowerCase(s.getValue().getWord().charAt(0))))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));//Set());
 
         similarLabel.setText(getCaption("similarTo") + "  (" + (from > 0 ? "..." : "") + lastCh + ", " + subset.size() + ")");
@@ -284,6 +291,7 @@ public class HelloController implements Initializable {
         if (addToDict.isSelected()){
             dictWordCounter++;
             setDictionaryCounter(false, dictWordCounter);
+            dictBackup(false); // save this state to prev dic
             return; // new word is already in the dictionary
         }
 
@@ -302,7 +310,7 @@ public class HelloController implements Initializable {
 
         // add to custom dictionary:
         // restore dictionary
-        dictBackup();
+        dictBackup(true);
 
         // add to custom dictionary
         if (addLineToFile(line, dictPath + langCode + HunspellBridJTester.USERDICT)){
@@ -368,17 +376,31 @@ public class HelloController implements Initializable {
         return counter;
     }
 
-    // ha van backup: visszaallitja, ha nincs letrehozza
-    private void dictBackup(){
+    /** ha van backup: visszaallitja, ha nincs letrehozza
+     *
+     * @param restore restore from previous state (true) or backup this state (false)
+     */
+    private void dictBackup(boolean restore){
 
         Path backup = Paths.get(dictPath + langCode + ".dic.bak");
+        Path prev = Paths.get(dictPath + langCode + ".dic.prev");
         Path live = Paths.get(dictPath + langCode + ".dic");
 
         try {
 
             if (Files.exists(backup)) {
-                Files.copy(backup, live, StandardCopyOption.REPLACE_EXISTING);
+                if (restore){
+                    if (Files.exists(prev)) {
+                        // restores state from the previous state of the dictionary
+                        Files.copy(prev, live, StandardCopyOption.REPLACE_EXISTING);
+                    }else{
+                        Files.copy(live, prev, StandardCopyOption.REPLACE_EXISTING);
+                    }
+                }else{
+                    Files.copy(live, prev, StandardCopyOption.REPLACE_EXISTING);
+                }
             }else{
+                // create a backup from the original dic
                 Files.copy(live, backup, StandardCopyOption.REPLACE_EXISTING);
             }
         } catch (IOException e) {
@@ -401,12 +423,15 @@ public class HelloController implements Initializable {
 
         String line = similar.getOriginal().replace(similar.getWord(), newWord);
 
-        dictBackup();
+        dictBackup(true);
 
         addLineToFile(line, dictPath + langCode + ".dic");
 
         dictChanged = true;
         testWordForms(true);
+        if (!freeText.getText().isEmpty()){
+            onFreeTextKeyUp(null);
+        }
     }
 
     private List<String> getCurrentSuffixSetCaptions(){
@@ -458,7 +483,12 @@ public class HelloController implements Initializable {
         int x = (int)similarCharLimitSpinner.getValue();
         similarCharLimitSpinner.setValueFactory( new SpinnerValueFactory.IntegerSpinnerValueFactory(1, inputText.getText().length(), x));
 
-        findSimilar(inputText.getText(), partOfSpeech.getValue(), (int)similarCharLimitSpinner.getValue());
+        findSimilarEx(-1);
+    }
+
+    private void findSimilarEx(int spinnerLimit){
+        findSimilar(pronunciationText.getText().isEmpty() ? inputText.getText() : pronunciationText.getText(),
+                partOfSpeech.getValue(), (int)similarCharLimitSpinner.getValue(), similarProperNounCheckbox.isSelected());
     }
 
     public void onStemButtonClick(ActionEvent actionEvent) {
@@ -481,7 +511,7 @@ public class HelloController implements Initializable {
 
     public void onConvertDictionaryButtonClick(ActionEvent actionEvent) {
 
-        dictBackup(); // necessary?
+        dictBackup(false); // necessary?
 
         String customDictPath = dictPath + langCode + HunspellBridJTester.USERDICT;
         File file = new File(customDictPath);
