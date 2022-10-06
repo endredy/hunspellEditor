@@ -10,19 +10,17 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.text.Text;
 import org.apache.log4j.Logger;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,8 +36,6 @@ public class HelloController implements Initializable {
     public CheckBox similarProperNounCheckbox;
     public TextField pronunciationText;
 
-    private int dictWordCounter = 0;
-    private int customDictWordCounter = 0;
     @FXML
     private TextField inputText;
 
@@ -73,7 +69,6 @@ public class HelloController implements Initializable {
     @FXML
     private RadioButton addToCustom;
     private List<TestSuffixSet> suffix = new ArrayList<>();
-    private Map<String, DictionaryItem> words  = new HashMap<>();
 
     private Map<String, String> captionsOfHunspellPOS = new HashMap<>(); // caption -> hunpos (pl "ige" -> "vrb"
 
@@ -83,6 +78,7 @@ public class HelloController implements Initializable {
     private String dictPath = "hunspell/";
     private String langCode = "hu_HU";
 
+    private DictionaryManager dictionaryManager;
     private ResourceBundle bundle;
 
     @FXML
@@ -92,8 +88,10 @@ public class HelloController implements Initializable {
 
         boolean iniOK = loadIni("test.cfg");
 
-        dictWordCounter = loadDictionary(dictPath + langCode + ".dic", true);
-        setDictionaryCounter(false, dictWordCounter);
+        dictionaryManager = new DictionaryManager(dictPath, langCode);
+        dictionaryManager.loadDictionary(dictPath + langCode + ".dic", true);
+        setDictionaryCounter(false, dictionaryManager.getDictWordCounter());
+        setDictionaryCounter(true, dictionaryManager.getCustomDictWordCounter());
         dictNameLabel.setText( langCode + ".dic: ");
         customDictNameLabel.setText( langCode + HunspellBridJTester.USERDICT + ": ");
 
@@ -261,20 +259,10 @@ public class HelloController implements Initializable {
         if (from < 0) from = 0;
         String lastCh = word.substring(from);
 
-        String finalHunspellPOS = hunspellPOS;
-        Map<String, DictionaryItem> subset = words.entrySet()//.keySet()
-                .stream()
-                .filter(s -> s.getValue().getWord().endsWith(lastCh) &&
-                             (finalHunspellPOS == null || (s.getValue().getPos() != null && s.getValue().getPos().startsWith(finalHunspellPOS))) &&
-                             (properNoun || !s.getValue().getWord().isEmpty() && Character.isLowerCase(s.getValue().getWord().charAt(0))))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));//Set());
-
-        similarLabel.setText(getCaption("similarTo") + "  (" + (from > 0 ? "..." : "") + lastCh + ", " + subset.size() + ")");
+        List<DictionaryItem> list = dictionaryManager.findSimilar(word, hunspellPOS, last, properNoun);
+        similarLabel.setText(getCaption("similarTo") + "  (" + (from > 0 ? "..." : "") + lastCh + ", " + list.size() + ")");
 
         similarWordList.getItems().clear();
-        List<DictionaryItem> list = new ArrayList<>(subset.values());
-//        list.sort(Comparator.comparing(DictionaryItem::getCounter).reversed()); // ranking by frequency
-        list.sort(Comparator.comparing(DictionaryItem::getWord)); // ranking by word
         similarWordList.getItems().addAll(list);
     }
 
@@ -289,9 +277,9 @@ public class HelloController implements Initializable {
         }
 
         if (addToDict.isSelected()){
-            dictWordCounter++;
-            setDictionaryCounter(false, dictWordCounter);
-            dictBackup(false); // save this state to prev dic
+            dictionaryManager.increaseDictWordCounter();
+            setDictionaryCounter(false, dictionaryManager.getDictWordCounter());
+            dictionaryManager.dictBackup(false); // save this state to prev dic
             return; // new word is already in the dictionary
         }
 
@@ -306,16 +294,8 @@ public class HelloController implements Initializable {
             return;
         }
 
-        String line = inputText.getText() + "/" + similar.getWord();
-
-        // add to custom dictionary:
-        // restore dictionary
-        dictBackup(true);
-
-        // add to custom dictionary
-        if (addLineToFile(line, dictPath + langCode + HunspellBridJTester.USERDICT)){
-            setDictionaryCounter(true, hunspellFreeTextTester.getCustomWordCounter() + 1);
-        }
+        dictionaryManager.addNewWordToCustomDict(inputText.getText(), similar);
+        setDictionaryCounter(true, hunspellFreeTextTester.getCustomWordCounter());
     }
 
     private void setDictionaryCounter(boolean custom, int value){
@@ -326,108 +306,10 @@ public class HelloController implements Initializable {
         }
     }
 
-    private int loadDictionary(String path, boolean withPOS){
-
-        words.clear();
-
-        HunspellBridJTester h = new HunspellBridJTester(dictPath + langCode, false);
-
-        setDictionaryCounter(true, h.getCustomWordCounter());
-
-        Map<Integer, String> posSet = new HashMap<>();
-        boolean first = true;
-        int counter = 0;
-        File file = new File(path);
-
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                // process the line.
-                if (first){
-                    first = false;
-                    continue; //skip the 1st line
-                }
-                counter++;
-                DictionaryItem d = new DictionaryItem(line);
-
-                // get pos (each type only once :))
-                if (withPOS) {
-                    String pos = posSet.get(d.getCode());
-                    if (pos == null) {
-                        // it hasn't analysed yet
-                        d.setPos(h.getPOS(d.getWord()));
-                        posSet.put(d.getCode(), d.getPos());
-                    } else
-                        d.setPos(pos);
-                }
-
-                DictionaryItem e = words.get(d.getKey());
-                if (e != null){
-                    e.increaseCounter();
-                }else {
-                    words.put(d.getKey(), d);
-                }
-            }
-
-            h.close();
-        } catch (IOException e) {
-            logger.error("io error: " + e.getMessage());
-        }
-        return counter;
-    }
-
-    /** ha van backup: visszaallitja, ha nincs letrehozza
-     *
-     * @param restore restore from previous state (true) or backup this state (false)
-     */
-    private void dictBackup(boolean restore){
-
-        Path backup = Paths.get(dictPath + langCode + ".dic.bak");
-        Path prev = Paths.get(dictPath + langCode + ".dic.prev");
-        Path live = Paths.get(dictPath + langCode + ".dic");
-
-        try {
-
-            if (Files.exists(backup)) {
-                if (restore){
-                    if (Files.exists(prev)) {
-                        // restores state from the previous state of the dictionary
-                        Files.copy(prev, live, StandardCopyOption.REPLACE_EXISTING);
-                    }else{
-                        Files.copy(live, prev, StandardCopyOption.REPLACE_EXISTING);
-                    }
-                }else{
-                    Files.copy(live, prev, StandardCopyOption.REPLACE_EXISTING);
-                }
-            }else{
-                // create a backup from the original dic
-                Files.copy(live, backup, StandardCopyOption.REPLACE_EXISTING);
-            }
-        } catch (IOException e) {
-            logger.error("error at file copy: " + e.getMessage());
-        }
-    }
-
-    private boolean addLineToFile(String line, String filePath){
-        try {
-            Writer output = new BufferedWriter(new FileWriter(filePath, true));
-            output.append(line).append("\n");
-            output.close();
-            return true;
-        } catch (IOException e) {
-            logger.error("we couldn't add a new word: " + e.getMessage());
-        }
-        return false;
-    }
     private void checkNewWord(String newWord, DictionaryItem similar){
 
-        String line = similar.getOriginal().replace(similar.getWord(), newWord);
+        dictionaryManager.addNewWord(newWord, similar);
 
-        dictBackup(true);
-
-        addLineToFile(line, dictPath + langCode + ".dic");
-
-        dictChanged = true;
         testWordForms(true);
         if (!freeText.getText().isEmpty()){
             onFreeTextKeyUp(null);
@@ -511,44 +393,14 @@ public class HelloController implements Initializable {
 
     public void onConvertDictionaryButtonClick(ActionEvent actionEvent) {
 
-        dictBackup(false); // necessary?
+        int r = dictionaryManager.convertDictionary();
 
-        String customDictPath = dictPath + langCode + HunspellBridJTester.USERDICT;
-        File file = new File(customDictPath);
-        if (!Files.exists(Paths.get(customDictPath))) {
+        if (r == 1){
             Alert alert = new Alert(Alert.AlertType.INFORMATION, getCaption("emptyCustomDictionary"), ButtonType.CLOSE);
             alert.showAndWait();
             return;
         }
-        int counter = 0;
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] parts = line.split("[/\\t]");
-                if (parts.length == 2) {
 
-                    String newWord = parts[0];
-                    String existingWord = parts[1];
-
-                    DictionaryItem similar = words.values()
-                            .stream()
-                            .filter(s -> s.getWord().equals(existingWord)).findFirst().orElse(null);
-
-                    if (similar != null) {
-                        String dictLine = similar.getOriginal().replace(similar.getWord(), newWord);
-                        if (addLineToFile(dictLine, dictPath + langCode + ".dic")){
-                            counter++;
-                        }
-                    }
-                }
-            }
-        } catch (FileNotFoundException e) {
-            logger.error("fle not found: " + customDictPath + " (" + e.getMessage() + ")");
-        } catch (IOException e) {
-            logger.error("io error: " + customDictPath + " (" + e.getMessage() + ")");
-        }
-
-        dictWordCounter += counter;
-        setDictionaryCounter(false, dictWordCounter);
+        setDictionaryCounter(false, dictionaryManager.getDictWordCounter());
     }
 }
