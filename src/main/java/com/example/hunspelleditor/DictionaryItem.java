@@ -1,6 +1,10 @@
 package com.example.hunspelleditor;
 
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
 public class DictionaryItem {
 
     private String word;
@@ -26,11 +30,26 @@ public class DictionaryItem {
         }catch (NumberFormatException e){}
 
         if (word.length() > 0)
-            key = word.substring(word.length() > MAX_SEARCH_LENGTH ? word.length() - MAX_SEARCH_LENGTH : 0) + code;
+//            key = word.substring(word.length() > MAX_SEARCH_LENGTH ? word.length() - MAX_SEARCH_LENGTH : 0) + code;
+            key = word.substring(word.length() > MAX_SEARCH_LENGTH ? word.length() - MAX_SEARCH_LENGTH : 0);
+//            key =  new StringBuilder(word).reverse().toString().substring(word.length() > MAX_SEARCH_LENGTH ? word.length() - MAX_SEARCH_LENGTH : 0) + code;
         else
             key = "<...>";
         counter = 1;
         pos = ""; // TODO
+    }
+
+    public int getAffNumber(){
+        try {
+            Pattern regex = Pattern.compile("(\\d+)$", Pattern.CANON_EQ);
+            Matcher regexMatcher = regex.matcher(original);
+            if (regexMatcher.find()) {
+                return Integer.parseInt(regexMatcher.group());
+            }
+        } catch (PatternSyntaxException ex) {
+            // Syntax error in the regular expression
+        }
+        return -1;
     }
 
     public String getKey() {
