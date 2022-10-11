@@ -12,6 +12,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.text.Text;
 import org.apache.log4j.Logger;
 
@@ -154,11 +155,16 @@ public class HelloController implements Initializable {
             }
         });
 
-        similarWordList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<DictionaryItem>() {
+//        similarWordList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<DictionaryItem>() {
+//            @Override
+//            public void changed(ObservableValue<? extends DictionaryItem> observable, DictionaryItem oldValue, DictionaryItem newValue) {
+        // click, instead of onchange, because input or other parameters can be changed, and onchange wouldn't fire:
+        similarWordList.setOnMouseClicked(new EventHandler<MouseEvent>() {
 
             @Override
-            public void changed(ObservableValue<? extends DictionaryItem> observable, DictionaryItem oldValue, DictionaryItem newValue) {
+            public void handle(MouseEvent event) {
                 // Your action here
+                DictionaryItem newValue = similarWordList.getSelectionModel().getSelectedItem();
                 if (newValue == null)
                     return;
                 System.out.println("Selected item: " + newValue.getWord());
