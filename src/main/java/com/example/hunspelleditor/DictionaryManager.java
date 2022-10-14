@@ -64,6 +64,9 @@ public class DictionaryManager {
                 counter++;
                 DictionaryItem d = new DictionaryItem(line);
 
+                if (d.getWord() == null)
+                    continue;
+
                 // get pos (each type only once :))
                 if (withPOS) {
                     String pos = posSet.get(d.getCode());

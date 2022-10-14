@@ -22,6 +22,9 @@ public class DictionaryItem {
         this.original = line;
 
         String[] a = line.split("[\\t/]"); //\\b
+        if (a.length == 0){
+            return;
+        }
         word = a[0];
         code = 0;
         try {
